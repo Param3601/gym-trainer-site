@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Find Professional Trainers Near You - Gym Trainers Marketplace{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <h1 class="display-4 fw-bold text-white mb-3">Find Professional Trainers Near You</h1>
+        <p class="lead text-white mb-5">Search verified, genuine, and experienced fitness trainers in your area</p>
+        
+        <div class="search-box">
+            <form action="{{ url_for('search') }}" method="GET" class="row g-3 justify-content-center">
+                <div class="col-md-4">
+                    <label class="form-label text-white">Select State</label>
+                    <select name="state" id="stateSelect" class="form-select form-select-lg" required>
+                        <option value="">Choose State...</option>
+                        {% for state in states %}
+                        <option value="{{ state }}">{{ state }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-white">Select City</label>
+                    <select name="city" id="citySelect" class="form-select form-select-lg" required>
+                        <option value="">Choose City...</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search me-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h2 class="section-title mb-4">
+                    <i class="bi bi-stars text-warning me-2"></i>Why Choose Our Trainers?
+                </h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h5>Verified Professionals</h5>
+                            <p class="text-muted">All trainers are verified and background checked for your safety</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-currency-rupee"></i>
+                            </div>
+                            <h5>Affordable Pricing</h5>
+                            <p class="text-muted">Competitive rates starting from ₹2,000 per week</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <h5>Pan India Coverage</h5>
+                            <p class="text-muted">Trainers available in all major cities across India</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="famous-trainers-card">
+                    <h4 class="mb-4">
+                        <i class="bi bi-trophy-fill text-warning me-2"></i>Famous Trainers of the Month
+                    </h4>
+                    {% for trainer in famous_trainers %}
+                    <div class="famous-trainer-item d-flex align-items-center mb-3 p-3">
+                        <div class="trainer-rank me-3">{{ loop.index }}</div>
+                        <img src="{{ trainer.photo_url }}" alt="{{ trainer.name }}" class="famous-trainer-img me-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ trainer.name }}</h6>
+                            <small class="text-muted">{{ trainer.city }}, {{ trainer.state }}</small>
+                            <div class="rating-stars small">
+                                {% set stars = trainer.get_star_rating() %}
+                                {% for i in range(stars[0]) %}
+                                <i class="bi bi-star-fill text-warning"></i>
+                                {% endfor %}
+                                {% if stars[1] %}
+                                <i class="bi bi-star-half text-warning"></i>
+                                {% endif %}
+                                <span class="ms-1">{{ trainer.rating }}</span>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('trainer_profile', trainer_id=trainer.id) }}" class="btn btn-sm btn-outline-primary">
+                            View
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="step-card text-center">
+                    <div class="step-number">1</div>
+                    <h5>Search Location</h5>
+                    <p class="text-muted">Select your state and city to find trainers near you</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card text-center">
+                    <div class="step-number">2</div>
+                    <h5>Choose Trainer</h5>
+                    <p class="text-muted">Browse profiles, ratings, and reviews to pick the best</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card text-center">
+                    <div class="step-number">3</div>
+                    <h5>Book Session</h5>
+                    <p class="text-muted">Select duration, date, and preferred time slot</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card text-center">
+                    <div class="step-number">4</div>
+                    <h5>Start Training</h5>
+                    <p class="text-muted">Pay securely and begin your fitness journey</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('stateSelect').addEventListener('change', function() {
+    const state = this.value;
+    const citySelect = document.getElementById('citySelect');
+    
+    citySelect.innerHTML = '<option value="">Loading...</option>';
+    
+    if (state) {
+        fetch('/api/cities/' + encodeURIComponent(state))
+            .then(response => response.json())
+            .then(cities => {
+                citySelect.innerHTML = '<option value="">Choose City...</option>';
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            });
+    } else {
+        citySelect.innerHTML = '<option value="">Choose City...</option>';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Coupons - Gym Trainers Marketplace{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <h1><i class="bi bi-gift me-2"></i>Coupons & Offers</h1>
+        <p class="mb-0">Exclusive discounts for your training sessions</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="profile-sidebar">
+                    <div class="text-center mb-4">
+                        <div class="profile-avatar">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h5 class="mt-3">{{ user.name }}</h5>
+                        <p class="text-muted small">{{ user.email }}</p>
+                    </div>
+                    
+                    <nav class="profile-nav">
+                        <a href="{{ url_for('user_profile') }}" class="profile-nav-item">
+                            <i class="bi bi-person me-2"></i>My Profile
+                        </a>
+                        <a href="{{ url_for('my_bookings') }}" class="profile-nav-item">
+                            <i class="bi bi-calendar-check me-2"></i>My Bookings
+                        </a>
+                        <a href="{{ url_for('my_coupons') }}" class="profile-nav-item active">
+                            <i class="bi bi-gift me-2"></i>Coupons
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="profile-nav-item">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </a>
+                        <a href="{{ url_for('help_page') }}" class="profile-nav-item">
+                            <i class="bi bi-question-circle me-2"></i>Help
+                        </a>
+                        <a href="{{ url_for('user_logout') }}" class="profile-nav-item text-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="profile-content-card">
+                    <h4 class="mb-4"><i class="bi bi-ticket-perforated me-2 text-primary"></i>Available Coupons</h4>
+                    
+                    {% if coupons %}
+                    <div class="row g-4">
+                        {% for coupon in coupons %}
+                        <div class="col-md-6">
+                            <div class="coupon-card">
+                                <div class="coupon-discount">
+                                    <span class="discount-value">{{ coupon.discount_percent }}%</span>
+                                    <span class="discount-text">OFF</span>
+                                </div>
+                                <div class="coupon-details">
+                                    <h5 class="coupon-code">{{ coupon.code }}</h5>
+                                    <p class="coupon-description">{{ coupon.description }}</p>
+                                    {% if coupon.min_order > 0 %}
+                                    <small class="text-muted">Min. order: {{ coupon.min_order|format_price }}</small>
+                                    {% endif %}
+                                    {% if coupon.max_discount %}
+                                    <small class="text-muted d-block">Max. discount: {{ coupon.max_discount|format_price }}</small>
+                                    {% endif %}
+                                    {% if coupon.valid_until %}
+                                    <small class="text-warning d-block mt-1">
+                                        <i class="bi bi-clock me-1"></i>Valid until {{ coupon.valid_until.strftime('%d %b %Y') }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm copy-coupon" data-code="{{ coupon.code }}">
+                                    <i class="bi bi-clipboard me-1"></i>Copy Code
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-gift display-3 text-muted"></i>
+                        <h4 class="mt-3">No coupons available</h4>
+                        <p class="text-muted">Check back later for exclusive offers!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.copy-coupon').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const code = this.dataset.code;
+        navigator.clipboard.writeText(code).then(() => {
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="bi bi-check me-1"></i>Copied!';
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 2000);
+        });
+    });
+});
+</script>
+{% endblock %}

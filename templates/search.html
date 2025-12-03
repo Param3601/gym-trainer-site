@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Search Trainers in {{ city }}, {{ state }} - Gym Trainers Marketplace{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white">Home</a></li>
+                <li class="breadcrumb-item active text-white-50">Search Results</li>
+            </ol>
+        </nav>
+        <h1 class="mt-3 mb-0">Trainers in {{ city }}, {{ state }}</h1>
+        <p class="mb-0 mt-2">{{ trainers|length }} trainers found</p>
+    </div>
+</section>
+
+<section class="py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="filter-card">
+                    <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>Filters</h5>
+                    <form action="{{ url_for('search') }}" method="GET">
+                        <input type="hidden" name="state" value="{{ state }}">
+                        <input type="hidden" name="city" value="{{ city }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trainer Type</label>
+                            <select name="type" class="form-select">
+                                <option value="all" {% if trainer_type == 'all' %}selected{% endif %}>All Trainers</option>
+                                <option value="home" {% if trainer_type == 'home' %}selected{% endif %}>Home/Personal Trainer</option>
+                                <option value="gym" {% if trainer_type == 'gym' %}selected{% endif %}>Gym Trainer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Sort By</label>
+                            <select name="sort" class="form-select">
+                                <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>Highest Rating</option>
+                                <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                                <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                                <option value="popularity" {% if sort_by == 'popularity' %}selected{% endif %}>Most Popular</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </form>
+                </div>
+                
+                <div class="famous-trainers-card mt-4">
+                    <h5 class="mb-3">
+                        <i class="bi bi-trophy-fill text-warning me-2"></i>Top Trainers
+                    </h5>
+                    {% for trainer in famous_trainers %}
+                    <div class="famous-trainer-item d-flex align-items-center mb-3 p-2">
+                        <img src="{{ trainer.photo_url }}" alt="{{ trainer.name }}" class="famous-trainer-img-sm me-2">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 small">{{ trainer.name }}</h6>
+                            <small class="text-muted">{{ trainer.city }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                {% if trainers %}
+                <div class="row g-4">
+                    {% for trainer in trainers %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="trainer-card">
+                            {% if trainer.is_top_pro %}
+                            <div class="top-pro-badge">
+                                <i class="bi bi-award-fill me-1"></i>Top Pro
+                            </div>
+                            {% endif %}
+                            <div class="trainer-card-img-container">
+                                <img src="{{ trainer.photo_url }}" alt="{{ trainer.name }}" class="trainer-card-img">
+                            </div>
+                            <div class="trainer-card-body">
+                                <h5 class="trainer-name">{{ trainer.name }}</h5>
+                                <p class="trainer-location text-muted small mb-2">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ trainer.city }}, {{ trainer.state }}
+                                </p>
+                                <div class="rating-stars mb-2">
+                                    {% set stars = trainer.get_star_rating() %}
+                                    {% for i in range(stars[0]) %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    {% endfor %}
+                                    {% if stars[1] %}
+                                    <i class="bi bi-star-half text-warning"></i>
+                                    {% endif %}
+                                    {% for i in range(stars[2]) %}
+                                    <i class="bi bi-star text-warning"></i>
+                                    {% endfor %}
+                                    <span class="ms-1 fw-bold">{{ trainer.rating }}</span>
+                                    <span class="text-muted small">({{ trainer.number_of_gymers }} trainees)</span>
+                                </div>
+                                <p class="trainer-intro small text-muted">{{ trainer.intro[:100] }}...</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price-tag">
+                                        <i class="bi bi-currency-rupee"></i>{{ trainer.base_week_price }}/week
+                                    </span>
+                                    {% if trainer.home_service %}
+                                    <span class="badge bg-success"><i class="bi bi-house me-1"></i>Home</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('trainer_profile', trainer_id=trainer.id) }}" class="btn btn-primary w-100 mt-3">
+                                    View Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-search display-1 text-muted"></i>
+                    <h3 class="mt-3">No trainers found</h3>
+                    <p class="text-muted">Try adjusting your filters or search in a different location</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">Search Again</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

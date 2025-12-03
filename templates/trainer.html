@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}{{ trainer.name }} - Gym Trainers Marketplace{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('search', state=trainer.state, city=trainer.city) }}" class="text-white">{{ trainer.city }}</a></li>
+                <li class="breadcrumb-item active text-white-50">{{ trainer.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="trainer-profile-card">
+                    {% if trainer.is_top_pro %}
+                    <div class="top-pro-badge-profile">
+                        <i class="bi bi-award-fill me-1"></i>Top Pro Trainer
+                    </div>
+                    {% endif %}
+                    <div class="text-center mb-4">
+                        <img src="{{ trainer.photo_url }}" alt="{{ trainer.name }}" class="trainer-profile-img">
+                    </div>
+                    <h2 class="text-center mb-2">{{ trainer.name }}</h2>
+                    <p class="text-center text-muted mb-3">
+                        <i class="bi bi-geo-alt me-1"></i>{{ trainer.city }}, {{ trainer.state }}
+                    </p>
+                    
+                    <div class="rating-display text-center mb-4">
+                        <div class="rating-stars mb-2">
+                            {% set stars = trainer.get_star_rating() %}
+                            {% for i in range(stars[0]) %}
+                            <i class="bi bi-star-fill text-warning fs-4"></i>
+                            {% endfor %}
+                            {% if stars[1] %}
+                            <i class="bi bi-star-half text-warning fs-4"></i>
+                            {% endif %}
+                            {% for i in range(stars[2]) %}
+                            <i class="bi bi-star text-warning fs-4"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="rating-number">{{ trainer.rating }}</span>
+                        <span class="text-muted">/ 5.0</span>
+                    </div>
+                    
+                    <div class="trainer-stats d-flex justify-content-around text-center mb-4">
+                        <div>
+                            <h4 class="mb-0 text-primary">{{ trainer.number_of_gymers }}</h4>
+                            <small class="text-muted">Trainees</small>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-primary">{{ trainer.reviews|length }}</h4>
+                            <small class="text-muted">Reviews</small>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 text-primary">{{ trainer.gyms|length }}</h4>
+                            <small class="text-muted">Locations</small>
+                        </div>
+                    </div>
+                    
+                    {% if booking and booking.paid_status %}
+                    <div class="alert alert-success">
+                        <h6 class="mb-2"><i class="bi bi-check-circle me-2"></i>Booking Confirmed!</h6>
+                        <p class="mb-1"><strong>Phone:</strong> {{ trainer.phone }}</p>
+                        <p class="mb-0"><strong>Email:</strong> {{ trainer.email }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('book_trainer', trainer_id=trainer.id) }}" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-calendar-check me-2"></i>Book This Trainer
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <div class="trainer-details-card mb-4">
+                    <h4 class="mb-3"><i class="bi bi-person-badge me-2 text-primary"></i>About</h4>
+                    <p class="lead">{{ trainer.intro }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="bi bi-currency-rupee me-2 text-primary"></i>Pricing</h5>
+                            <ul class="list-unstyled pricing-list">
+                                <li><span class="badge bg-light text-dark me-2">1 Week</span> {{ trainer.base_week_price|format_price }}</li>
+                                <li><span class="badge bg-light text-dark me-2">2 Weeks</span> {{ (trainer.base_week_price * 2)|format_price }}</li>
+                                <li><span class="badge bg-success me-2">1 Month</span> {{ (trainer.base_month_price * 0.9)|int|format_price }} <small class="text-success">(10% off)</small></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3"><i class="bi bi-check2-circle me-2 text-primary"></i>Services</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-check text-success me-2"></i>Personal Training</li>
+                                <li><i class="bi bi-check text-success me-2"></i>Diet Consultation</li>
+                                {% if trainer.home_service %}
+                                <li><i class="bi bi-check text-success me-2"></i>Home Visits Available</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trainer-details-card mb-4">
+                    <h4 class="mb-3"><i class="bi bi-building me-2 text-primary"></i>Training Locations & Slots</h4>
+                    {% for gym in trainer.gyms %}
+                    <div class="gym-card mb-3">
+                        <h5 class="mb-2">{{ gym.name }}</h5>
+                        <p class="text-muted small mb-2"><i class="bi bi-geo me-1"></i>{{ gym.address }}</p>
+                        <div class="slots-container">
+                            {% for slot in gym.slots %}
+                            <span class="slot-badge">
+                                <i class="bi bi-clock me-1"></i>{{ slot.day }}: {{ slot.start_time }} - {{ slot.end_time }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="trainer-details-card">
+                    <h4 class="mb-4"><i class="bi bi-chat-quote me-2 text-primary"></i>Reviews ({{ reviews|length }})</h4>
+                    {% for review in reviews %}
+                    <div class="review-card {% if review.is_positive %}review-positive{% else %}review-negative{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-0">{{ review.reviewer_name }}</h6>
+                                <div class="rating-stars small">
+                                    {% for i in range(review.rating) %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                    {% endfor %}
+                                    {% for i in range(5 - review.rating) %}
+                                    <i class="bi bi-star text-warning"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% if review.is_positive %}
+                            <span class="badge bg-success"><i class="bi bi-hand-thumbs-up me-1"></i>Positive</span>
+                            {% else %}
+                            <span class="badge bg-secondary"><i class="bi bi-hand-thumbs-down me-1"></i>Critical</span>
+                            {% endif %}
+                        </div>
+                        <p class="mb-0 text-muted">{{ review.comment }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

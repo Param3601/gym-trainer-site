@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Book {{ trainer.name }} - Gym Trainers Marketplace{% endblock %}
+
+{% block content %}
+<section class="py-4 bg-primary text-white">
+    <div class="container">
+        <div class="progress-indicator mb-3">
+            <span class="step completed"><i class="bi bi-check-circle-fill me-1"></i>Search</span>
+            <i class="bi bi-chevron-right mx-2"></i>
+            <span class="step completed"><i class="bi bi-check-circle-fill me-1"></i>Trainer</span>
+            <i class="bi bi-chevron-right mx-2"></i>
+            <span class="step active"><i class="bi bi-circle-fill me-1"></i>Booking</span>
+            <i class="bi bi-chevron-right mx-2"></i>
+            <span class="step"><i class="bi bi-circle me-1"></i>Payment</span>
+        </div>
+        <h1>Book Your Training Session</h1>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 mb-4">
+                <div class="trainer-summary-card">
+                    <img src="{{ trainer.photo_url }}" alt="{{ trainer.name }}" class="trainer-summary-img mb-3">
+                    <h4>{{ trainer.name }}</h4>
+                    <p class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ trainer.city }}, {{ trainer.state }}</p>
+                    <div class="rating-stars mb-3">
+                        {% set stars = trainer.get_star_rating() %}
+                        {% for i in range(stars[0]) %}
+                        <i class="bi bi-star-fill text-warning"></i>
+                        {% endfor %}
+                        {% if stars[1] %}
+                        <i class="bi bi-star-half text-warning"></i>
+                        {% endif %}
+                        <span class="ms-1">{{ trainer.rating }}</span>
+                    </div>
+                    <hr>
+                    <div class="pricing-summary">
+                        <h6 class="mb-3">Pricing</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>1 Week</span>
+                            <span class="fw-bold">{{ trainer.base_week_price|format_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>2 Weeks</span>
+                            <span class="fw-bold">{{ (trainer.base_week_price * 2)|format_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-success">
+                            <span>1 Month <small>(10% off)</small></span>
+                            <span class="fw-bold">{{ (trainer.base_month_price * 0.9)|int|format_price }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="booking-form-card">
+                    <h4 class="mb-4"><i class="bi bi-calendar-event me-2 text-primary"></i>Booking Details</h4>
+                    
+                    {% if not user %}
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <a href="{{ url_for('user_login') }}">Login</a> or <a href="{{ url_for('user_register') }}">register</a> to track your bookings and get personalized offers!
+                    </div>
+                    {% endif %}
+                    
+                    <form action="{{ url_for('book_trainer', trainer_id=trainer.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-person me-1"></i>Your Name</label>
+                            <input type="text" name="user_name" class="form-control form-control-lg" required placeholder="Enter your full name" value="{{ user.name if user else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-envelope me-1"></i>Email Address</label>
+                            <input type="email" name="user_email" class="form-control form-control-lg" required placeholder="Enter your email" value="{{ user.email if user else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-phone me-1"></i>Phone Number</label>
+                            <input type="tel" name="user_phone" class="form-control form-control-lg" required placeholder="+91 XXXXX XXXXX" value="{{ user.phone if user else '' }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-clock me-1"></i>Duration</label>
+                            <select name="duration" class="form-select form-select-lg" required>
+                                <option value="1_week">1 Week - {{ trainer.base_week_price|format_price }}</option>
+                                <option value="2_weeks">2 Weeks - {{ (trainer.base_week_price * 2)|format_price }}</option>
+                                <option value="1_month">1 Month - {{ (trainer.base_month_price * 0.9)|int|format_price }} (10% off)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-calendar me-1"></i>Start Date</label>
+                            <input type="date" name="start_date" class="form-control form-control-lg" required>
+                        </div>
+                        
+                        {% if trainer.gyms %}
+                        <div class="mb-4">
+                            <label class="form-label"><i class="bi bi-building me-1"></i>Preferred Slot (Optional)</label>
+                            <select name="chosen_slot" class="form-select form-select-lg">
+                                <option value="">Select a slot...</option>
+                                {% for gym in trainer.gyms %}
+                                <optgroup label="{{ gym.name }}">
+                                    {% for slot in gym.slots %}
+                                    <option value="{{ gym.name }} - {{ slot.day }} {{ slot.start_time }}-{{ slot.end_time }}">
+                                        {{ slot.day }}: {{ slot.start_time }} - {{ slot.end_time }}
+                                    </option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-arrow-right-circle me-2"></i>Proceed to Payment
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.querySelector('input[name="start_date"]').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
