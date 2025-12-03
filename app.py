@@ -1,12 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from models import db, Trainer, Gym, Slot, Review, Booking, User, Notification, Coupon
-with app.app_context():
-    try:
-        db.create_all()
-        print("DB tables created / verified.")
-    except Exception as e:
-        print("Error during db.create_all():", e)
-
 from datetime import datetime
 import math
 import os
@@ -17,6 +10,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///gym_trainers.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
+with app.app_context():
+    try:
+        db.create_all()
+        print("DB tables created / verified.")
+    except Exception as e:
+        print("Error during db.create_all():", e)
+
 
 INDIA_STATES_CITIES = {
     "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Thane", "Kolhapur"],
