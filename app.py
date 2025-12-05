@@ -416,6 +416,7 @@ def user_register():
     return render_template('register.html')
 
 @app.route('/logout')
+@app.route('/logout')
 def user_logout():
     session.pop('user_id', None)
     session.pop('user_name', None)
@@ -424,25 +425,30 @@ def user_logout():
 
 @app.template_filter('format_price')
 def format_price(value):
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return value
     return f"₹{value:,}"
-    
-#TEMPORARY: Show trainer passcodes (for your own access)
+
+
+# TEMPORARY: Show trainer passcodes (for your own access)
 @app.route('/dev/passcodes')
 def dev_passcodes():
     trainers = Trainer.query.order_by(Trainer.id).limit(100).all()
     lines = []
     for t in trainers:
-        lines.append(
-            f"{t.id} - {t.name} ({t.city}, {t.state}) : {t.passcode}"
-        )
+        lines.append(f"{t.id} - {t.name} ({t.city}, {t.state}) : {t.passcode}")
     return "<pre>" + "\n".join(lines) + "</pre>"
 
-app.route('/my-profile')
+
+@app.route('/my-profile')
 def user_profile():
     if 'user_id' not in session:
         return redirect(url_for('user_login'))
     user = User.query.get(session['user_id'])
     return render_template('my_profile.html', user=user)
+
 
 @app.route('/my-bookings')
 def my_bookings():
@@ -451,6 +457,7 @@ def my_bookings():
     bookings = Booking.query.filter_by(user_id=session['user_id']).all()
     return render_template('my_bookings.html', bookings=bookings)
 
+
 @app.route('/coupons')
 def my_coupons():
     if 'user_id' not in session:
@@ -458,9 +465,11 @@ def my_coupons():
     coupons = Coupon.query.filter_by(user_id=session['user_id']).all()
     return render_template('coupons.html', coupons=coupons)
 
+
 @app.route('/help')
 def user_help():
     return render_template('help.html')
+
 
 if __name__ == '__main__':
     with app.app_context():
