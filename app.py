@@ -349,20 +349,29 @@ def help_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def user_login():
+    # If already logged in, go to profile
     if 'user_id' in session:
         return redirect(url_for('user_profile'))
-    
+
     if request.method == 'POST':
         email = request.form.get('email')
+
+        if not email:
+            return render_template('login.html', error="Please enter your email")
+
+        # Match exactly what registration stored
         user = User.query.filter_by(email=email).first()
-        
-        if user:
-            session['user_id'] = user.id
-            session['user_name'] = user.name
-            return redirect(url_for('user_profile'))
-        else:
-            return render_template('login.html', error="No account found with this email. Please register first.")
-    
+
+        if not user:
+            return render_template('login.html',
+                                   error="No account found with this email. Please register first.")
+
+        # Store session data properly
+        session['user_id'] = user.id
+        session['user_name'] = user.name
+
+        return redirect(url_for('user_profile'))
+
     return render_template('login.html')
 
 
