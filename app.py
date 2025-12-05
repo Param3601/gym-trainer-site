@@ -368,20 +368,17 @@ def user_login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def user_register():
-    # If already logged in, go to profile
-    if 'user_id' in session:
-        return redirect(url_for('user_profile'))
-
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone')
 
+        # basic validation
         if not name or not email or not phone:
             return render_template('register.html',
                                    error="All fields are required.")
 
-        # Check if user already exists
+        # check if user exists
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             return render_template(
@@ -389,7 +386,7 @@ def user_register():
                 error="An account with this email already exists."
             )
 
-        # Create and save new user
+        # create user
         try:
             user = User(name=name, email=email, phone=phone)
             db.session.add(user)
@@ -399,15 +396,15 @@ def user_register():
             return render_template('register.html',
                                    error="Error saving user. Please try again.")
 
-        # Log the user in
+        # log in
         session['user_id'] = user.id
         session['user_name'] = user.name
 
-        return redirect(url_for('user_profile'))
+        # ✅ simple: go to homepage
+        return redirect(url_for('index'))
 
-    # GET → show empty form
+    # GET → just show form
     return render_template('register.html')
-
 
 @app.route('/logout')
 def user_logout():
