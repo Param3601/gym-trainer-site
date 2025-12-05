@@ -368,27 +368,44 @@ def user_login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def user_register():
+    # If already logged in, go to profile
     if 'user_id' in session:
         return redirect(url_for('user_profile'))
-    
+
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone')
-        
+
+        if not name or not email or not phone:
+            return render_template('register.html',
+                                   error="All fields are required.")
+
+        # Check if user already exists
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            return render_template('register.html', error="An account with this email already exists.")
-        
-        user = User(name=name, email=email, phone=phone)
-        db.session.add(user)
-        db.session.commit()
-        
+            return render_template(
+                'register.html',
+                error="An account with this email already exists."
+            )
+
+        # Create and save new user
+        try:
+            user = User(name=name, email=email, phone=phone)
+            db.session.add(user)
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            return render_template('register.html',
+                                   error="Error saving user. Please try again.")
+
+        # Log the user in
         session['user_id'] = user.id
         session['user_name'] = user.name
-        
+
         return redirect(url_for('user_profile'))
-    
+
+    # GET → show empty form
     return render_template('register.html')
 
 
