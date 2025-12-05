@@ -378,7 +378,7 @@ def user_register():
         
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            return render_template('profile/register.html', error="An account with this email already exists.")
+            return render_template('register.html', error="An account with this email already exists.")
         
         user = User(name=name, email=email, phone=phone)
         db.session.add(user)
@@ -389,7 +389,7 @@ def user_register():
         
         return redirect(url_for('user_profile'))
     
-    return render_template('profile/register.html')
+    return render_template('register.html')
 
 
 @app.route('/logout')
