@@ -437,6 +437,31 @@ def dev_passcodes():
         )
     return "<pre>" + "\n".join(lines) + "</pre>"
 
+app.route('/my-profile')
+def user_profile():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+    user = User.query.get(session['user_id'])
+    return render_template('my_profile.html', user=user)
+
+@app.route('/my-bookings')
+def my_bookings():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+    bookings = Booking.query.filter_by(user_id=session['user_id']).all()
+    return render_template('my_bookings.html', bookings=bookings)
+
+@app.route('/coupons')
+def my_coupons():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+    coupons = Coupon.query.filter_by(user_id=session['user_id']).all()
+    return render_template('coupons.html', coupons=coupons)
+
+@app.route('/help')
+def user_help():
+    return render_template('help.html')
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
