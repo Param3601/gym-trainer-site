@@ -361,9 +361,9 @@ def user_login():
             session['user_name'] = user.name
             return redirect(url_for('user_profile'))
         else:
-            return render_template('profile/login.html', error="No account found with this email. Please register first.")
+            return render_template('login.html', error="No account found with this email. Please register first.")
     
-    return render_template('profile/login.html')
+    return render_template('login.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
