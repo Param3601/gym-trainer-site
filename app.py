@@ -416,7 +416,6 @@ def user_register():
     return render_template('register.html')
 
 @app.route('/logout')
-@app.route('/logout')
 def user_logout():
     session.pop('user_id', None)
     session.pop('user_name', None)
