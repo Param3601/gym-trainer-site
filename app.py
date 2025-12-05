@@ -402,7 +402,8 @@ def user_logout():
 @app.template_filter('format_price')
 def format_price(value):
     return f"₹{value:,}"
-TEMPORARY: Show trainer passcodes (for your own access)
+    
+#TEMPORARY: Show trainer passcodes (for your own access)
 @app.route('/dev/passcodes')
 def dev_passcodes():
     trainers = Trainer.query.order_by(Trainer.id).limit(100).all()
