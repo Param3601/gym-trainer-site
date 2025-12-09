@@ -383,9 +383,21 @@ def my_coupons():
     return render_template('coupons.html', coupons=coupons)
 
 
-@app.route('/help')
-def user_help():
-    return render_template('help.html')
+@app.route('/profile/help')
+def help_page():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+    
+    user = User.query.get(session['user_id'])
+    return render_template('profile/help.html', user=user)
+
+@app.route('/profile/settings')
+def settings():
+    if 'user_id' not in session:
+        return redirect(url_for('user_login'))
+    
+    user = User.query.get(session['user_id'])
+    return render_template('profile/settings.html', user=user)
 
 
 if __name__ == '__main__':
